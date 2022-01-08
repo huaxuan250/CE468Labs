@@ -51,13 +51,21 @@
 // Matrix multiplication kernel thread specification
 __global__ void MatrixMulKernel(Matrix M, Matrix N, Matrix P)
 {
+
+	int index = threadIdx.x;
+	int stride_x = blockDim.x;
+
+	printf("%d %d\n", index, stride);
+
+
 	//Multiply the two matrices
-
-
-
-
-
-
+	for(int x = 0; x < P.height; x ++){
+		for(int y =0; y<P.width; y ++){
+			for (int itr = 0; itr < P.width; itr++){
+				*(P.elements + 16*x + y) += (*(M.elements + 16*x + 1*itr)) * (*(N.elements + 16*itr + 1*y));
+			}
+		}
+	}
 
 }
 

@@ -145,44 +145,42 @@ int main(int argc, char** argv) {
 ////////////////////////////////////////////////////////////////////////////////
 void MatrixMulOnDevice(const Matrix M, const Matrix N, Matrix P)
 {
-	//Interface host call to the device kernel code and invoke the kernel
-	int Mh = M.height;
-	int Mw = M.width;
-	int Nh = N.height;
-	int Nw = N.width;
-	int Ph = P.height;
-	int Pw = P.width;
 	
-	// printf("M:\n");
-	// for(int x = 0; x < Ph; x ++){
-	// 	for(int y =0; y<Pw; y ++){
-	// 		printf("%f ",*(M.elements + 16*x + 1*y));
-	// 	}
-	// 	printf("\n");
-	// }
-
-	// printf("N:\n");
-	// for(int x = 0; x < Ph; x ++){
-	// 	for(int y =0; y<Pw; y ++){
-	// 		printf("%f ",*(N.elements + 16*x + 1*y));
-	// 	}
-	// 	printf("\n");
-	// }
-
 	// 1. Initialize P to 0 for safety
-	for(int x = 0; x < Ph; x ++){
-		for(int y =0; y<Pw; y ++){
+	for(int x = 0; x < P.height; x ++){
+		for(int y =0; y<P.width; y ++){
 			*(P.elements + 16*x + 1*y) = 0.0;
 		}
 	}
 
-	for(int x = 0; x < Ph; x ++){
-		for(int y =0; y<Pw; y ++){
-			for (int itr = 0; itr < Pw; itr++){
-				*(P.elements + 16*x + y) += (*(M.elements + 16*x + 1*itr)) * (*(N.elements + 16*itr + 1*y));
-			}
-		}
-	}
+	// 2. Allocate Matrices on Device
+	Matrix Md = AllocateDeviceMatrix(M);
+	Matrix Nd = AllocateDeviceMatrix(N);
+	Matrix Pd = AllocateDeviceMatrix(P);
+
+	// 3. Copy M N P's data to Md Nd Pd
+	CopyToDeviceMatrix(Md, M);
+	CopyToDeviceMatrix(Nd, N);
+	CopyToDeviceMatrix(Pd, P);
+
+	//
+	dim3 DimGrid(1);
+	dim3 DimBlock(16,16,16);
+	size_t sharedMem = 0;
+	MatrixMulKernel<<<DimGrid, DimBlock, sharedMem>>>(Md, Nd, Pd);
+
+	// Finish Computing and aggregate the res
+	cudaDeviceSynchronize();
+
+	// Pd has the data we want, copy from it
+	CopyFromDeviceMatrix(P, Pd);
+
+	// free device memory
+	cudaFree(Pd.elements);
+	cudaFree(Md.elements);
+	cudaFree(Nd.elements);
+
+	
 }
 
 // Allocate a device matrix of same size as M.
