@@ -149,7 +149,7 @@ void MatrixMulOnDevice(const Matrix M, const Matrix N, Matrix P)
 	// 1. Initialize P to 0 for safety
 	for(int x = 0; x < P.height; x ++){
 		for(int y =0; y<P.width; y ++){
-			*(P.elements + 16*x + 1*y) = 0.0;
+			P.elements[P.width*x + y] = 0.0;
 		}
 	}
 
@@ -165,7 +165,7 @@ void MatrixMulOnDevice(const Matrix M, const Matrix N, Matrix P)
 
 	//
 	dim3 DimGrid(1,1);
-	dim3 DimBlock(16,16);
+	dim3 DimBlock(P.height, P.width);
 	MatrixMulKernel<<<DimGrid,DimBlock>>>(Md, Nd, Pd);
 
 	// Finish Computing and aggregate the res
