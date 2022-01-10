@@ -73,7 +73,7 @@ __global__ void MatrixMulKernel(Matrix M, Matrix N, Matrix P)
 	// 	}
 	// }
 	for (int itr = 0; itr < P.width; itr++){
-		*(P.elements + 16*tidX + tidY) += (*(M.elements + 16*tidX + 1*itr)) * (*(N.elements + 16*itr + 1*tidY));
+		P.elements[P.width*tidX + tidY] += M.elements[M.width*tidX + itr] * N.elements[N.width*itr + tidY];
 	}
 
 }
