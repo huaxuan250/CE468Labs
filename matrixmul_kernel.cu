@@ -52,19 +52,28 @@
 __global__ void MatrixMulKernel(Matrix M, Matrix N, Matrix P)
 {
 
-	int index = threadIdx.x;
-	int stride_x = blockDim.x;
+	/*
+		1. ThreadIDx centered coding
+		2. Use threadID.x and TID.y to represent each element of P
+		3. Hence we need 16*16 = 256 threads
+		4. tid.x represents the row, tid.y represents the col
+		4. 16*tid.x and 1*tid.y
+	*/
 
-	printf("%d %d\n", index, stride);
 
+	int tidX = threadIdx.x;
+	int tidY = threadIdx.y;
 
 	//Multiply the two matrices
-	for(int x = 0; x < P.height; x ++){
-		for(int y =0; y<P.width; y ++){
-			for (int itr = 0; itr < P.width; itr++){
-				*(P.elements + 16*x + y) += (*(M.elements + 16*x + 1*itr)) * (*(N.elements + 16*itr + 1*y));
-			}
-		}
+	// for(int x = 0; x < P.height; x ++){
+	// 	for(int y =0; y<P.width; y ++){
+	// 		for (int itr = 0; itr < P.width; itr++){
+	// 			*(P.elements + 16*x + y) += (*(M.elements + 16*x + 1*itr)) * (*(N.elements + 16*itr + 1*y));
+	// 		}
+	// 	}
+	// }
+	for (int itr = 0; itr < P.width; itr++){
+		*(P.elements + 16*tidX + tidY) += (*(M.elements + 16*tidX + 1*itr)) * (*(N.elements + 16*itr + 1*tidY));
 	}
 
 }

@@ -164,10 +164,10 @@ void MatrixMulOnDevice(const Matrix M, const Matrix N, Matrix P)
 	CopyToDeviceMatrix(Pd, P);
 
 	//
-	dim3 DimGrid(1);
-	dim3 DimBlock(16,16,16);
+	dim3 DimGrid(1,1);
+	dim3 DimBlock(16,16);
 	size_t sharedMem = 0;
-	MatrixMulKernel<<<DimGrid, DimBlock, sharedMem>>>(Md, Nd, Pd);
+	MatrixMulKernel<<<DimGrid,DimBlock>>>(Md, Nd, Pd);
 
 	// Finish Computing and aggregate the res
 	cudaDeviceSynchronize();
