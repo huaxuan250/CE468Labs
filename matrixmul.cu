@@ -145,41 +145,41 @@ int main(int argc, char** argv) {
 ////////////////////////////////////////////////////////////////////////////////
 void MatrixMulOnDevice(const Matrix M, const Matrix N, Matrix P)
 {
-	
-	// 1. Initialize P to 0 for safety
+	// 1. CPU data structure already allocated
+	// 2. Initialize P to 0 for safety
 	for(int x = 0; x < P.height; x ++){
-		for(int y =0; y<P.width; y ++){
+		for(int y = 0; y < P.width; y ++){
 			P.elements[P.width*x + y] = 0.0;
 		}
 	}
 
-	// 2. Allocate Matrices on Device
+	// 3. Allocate Matrices on Device
 	Matrix Md = AllocateDeviceMatrix(M);
 	Matrix Nd = AllocateDeviceMatrix(N);
 	Matrix Pd = AllocateDeviceMatrix(P);
 
-	// 3. Copy M N P's data to Md Nd Pd
+	// 4. Copy M N P's data to Md Nd Pd
 	CopyToDeviceMatrix(Md, M);
 	CopyToDeviceMatrix(Nd, N);
 	CopyToDeviceMatrix(Pd, P);
 
-	//
+	// 5. Define execution config
 	dim3 DimGrid(1,1);
 	dim3 DimBlock(P.height, P.width);
+
+	// 6. Run kernel
 	MatrixMulKernel<<<DimGrid,DimBlock>>>(Md, Nd, Pd);
 
-	// Finish Computing and aggregate the res
+	// 7. Finish Computing (synchronize) and aggregate the res
 	cudaDeviceSynchronize();
 
-	// Pd has the data we want, copy from it
+	// 8. Pd has the data we want, copy from it
 	CopyFromDeviceMatrix(P, Pd);
 
-	// free device memory
+	// 9. free device memory
 	cudaFree(Pd.elements);
 	cudaFree(Md.elements);
-	cudaFree(Nd.elements);
-
-	
+	cudaFree(Nd.elements);	
 }
 
 // Allocate a device matrix of same size as M.

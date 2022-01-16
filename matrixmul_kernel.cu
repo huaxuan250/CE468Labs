@@ -60,18 +60,9 @@ __global__ void MatrixMulKernel(Matrix M, Matrix N, Matrix P)
 		4. 16*tid.x and 1*tid.y
 	*/
 
-
 	int tidX = threadIdx.x;
 	int tidY = threadIdx.y;
 
-	//Multiply the two matrices
-	// for(int x = 0; x < P.height; x ++){
-	// 	for(int y =0; y<P.width; y ++){
-	// 		for (int itr = 0; itr < P.width; itr++){
-	// 			*(P.elements + 16*x + y) += (*(M.elements + 16*x + 1*itr)) * (*(N.elements + 16*itr + 1*y));
-	// 		}
-	// 	}
-	// }
 	for (int itr = 0; itr < P.width; itr++){
 		P.elements[P.width*tidX + tidY] += M.elements[M.width*tidX + itr] * N.elements[N.width*itr + tidY];
 	}
