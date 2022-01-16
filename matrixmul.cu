@@ -164,8 +164,10 @@ void MatrixMulOnDevice(const Matrix M, const Matrix N, Matrix P)
 	CopyToDeviceMatrix(Pd, P);
 
 	// 5. Define execution config
-	dim3 DimGrid(1,1);
-	dim3 DimBlock(P.height, P.width);
+	unsigned int threads_block = 64;
+	unsigned int blocks = (P.height * P.width + threads_block - 1) / threads_block;
+	dim3 DimGrid(blocks);
+	dim3 DimBlock(threads_block);
 
 	// 6. Run kernel
 	MatrixMulKernel<<<DimGrid,DimBlock>>>(Md, Nd, Pd);

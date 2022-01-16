@@ -59,16 +59,18 @@ __global__ void MatrixMulKernel(Matrix M, Matrix N, Matrix P)
 		4. tid.x represents the row, tid.y represents the col
 		4. 16*tid.x and 1*tid.y
 	*/
-
-	int tidX = threadIdx.x;
-	int tidY = threadIdx.y;
+	unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
+	unsigned int row = idx / P.width;
+	unsigned int col = idx % P.width;
 	float sum = 0.0;
 
-	for (int itr = 0; itr < P.width; itr++){
-		sum += M.elements[M.width*tidX + itr] * N.elements[N.width*itr + tidY];
+	if (row < P.height && col < P.width)
+	{
+		for (int itr = 0; itr < P.width; itr++){
+			sum += M.elements[M.width*row + itr] * N.elements[N.width*itr + col];
+		}
+		P.elements[P.width*row + col] = sum;
 	}
-	P.elements[P.width*tidX + tidY] = sum;
-
 }
 
 #endif // #ifndef _MATRIXMUL_KERNEL_H_
