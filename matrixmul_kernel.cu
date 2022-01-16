@@ -62,10 +62,12 @@ __global__ void MatrixMulKernel(Matrix M, Matrix N, Matrix P)
 
 	int tidX = threadIdx.x;
 	int tidY = threadIdx.y;
+	float sum = 0.0;
 
 	for (int itr = 0; itr < P.width; itr++){
-		P.elements[P.width*tidX + tidY] += M.elements[M.width*tidX + itr] * N.elements[N.width*itr + tidY];
+		sum += M.elements[M.width*tidX + itr] * N.elements[N.width*itr + tidY];
 	}
+	P.elements[P.width*tidX + tidY] = sum;
 
 }
 
